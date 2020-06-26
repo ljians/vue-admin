@@ -14,7 +14,12 @@
 
         <el-form-item prop="password" class="item-form">
           <label for="">密码</label>
-          <el-input type="password" v-model="ruleForm.password" autocomplete="off" minlength="6" maxlength="20"></el-input>
+          <el-input type="text" v-model="ruleForm.password" autocomplete="off" minlength="6" maxlength="20"></el-input>
+        </el-form-item>
+
+        <el-form-item prop="passwords" class="item-form" v-if="menuTab[1].current">
+          <label for="">确认密码</label>
+          <el-input type="text" v-model="ruleForm.passwords" autocomplete="off" minlength="6" maxlength="20"></el-input>
         </el-form-item>
 
         <el-form-item prop="mobCode" class="item-form">
@@ -38,39 +43,60 @@
 </template>
 
 <script>
+import { stripscript, validateEmail, validatePwd, validateMCode } from '@/utils/validate'
 export default {
   name: 'login', 
   data() {
     // 邮箱验证
-    var validateUserName = (rule, value, callback) => {
-      let reg = /^([a-zA-Z]|[0-9])(\w|\_)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+    var validateUserName = (rule, value, callback) => { 
       if (value === '') {
         callback(new Error('请输入用户邮箱'));
-      }else if(!reg.test(value)) {
+      }else if(validateEmail(value)) {
         callback(new Error('您输入的邮箱格式错误, 请输入正确的邮箱!'))
       } else {
         callback();
       }
     };
+
     // 密码验证
     var validatePassword = (rule, value, callback) => {
-      let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
-
+      // 过滤后的数据
+      this.ruleForm.password = stripscript(value)
+      value = this.ruleForm.password
+      
       if (value === '') {
-        callback(new Error('请再次输入密码'));
-      } else if (!reg.test(value)) {
+        callback(new Error('请输入密码'));
+      } else if (validatePwd(value)) {
         callback(new Error('密码由6-20位的数字和字母组成!'));
       } else {
         callback();
       }
     };
+
+    // 重复密码验证
+    var validatePasswords = (rule, value, callback) => {
+      // 过滤后的数据
+      this.ruleForm.passwords = stripscript(value)
+      value = this.ruleForm.passwords
+      
+      if (value === '') {
+        callback(new Error('请再次输入密码'));
+      } else if (value !== this.ruleForm.password) {
+        callback(new Error('两次密码输入不一样!'));
+      } else {
+        callback();
+      }
+    };
+
     // 验证验证码
     var validateMobCode = (rule, value, callback) => {
-      let reg = /^[a-z0-9]{6}$/
+      // 过滤后的数据
+      this.ruleForm.mobCode = stripscript(value)
+      value = this.ruleForm.mobCode
 
       if (value === '') {
         return callback(new Error('验证码不能为空!'));
-      }else if(!reg.test(value)) {
+      }else if(validateMCode(value)) {
         return callback(new Error('验证码格式错误!'))
       }else {
         callback()
@@ -84,6 +110,7 @@ export default {
       ruleForm: {
         username: '',
         password: '',
+        passwords: '',
         mobCode: ''
       },
       rules: {
@@ -92,6 +119,9 @@ export default {
         ],
         password: [
           { validator: validatePassword, trigger: 'blur' }
+        ],
+        passwords: [
+          { validator: validatePasswords, trigger: 'blur' }
         ],
         mobCode: [
           { validator: validateMobCode, trigger: 'blur' }
