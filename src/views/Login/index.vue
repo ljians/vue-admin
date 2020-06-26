@@ -44,11 +44,66 @@
 
 <script>
 import { stripscript, validateEmail, validatePwd, validateMCode } from '@/utils/validate'
+import { reactive } from '@vue/composition-api'
 export default {
-  name: 'login', 
-  data() {
+  name: 'login',
+  setup(props, context) {
+    // 这里放置date数据、生命周期函数、自定义的函数
+    /**
+     * 声明数据
+     */
+    const menuTab = reactive([
+      { txt: '登录', current: true },
+      { txt: '注册', current: false }
+    ])
+    // 表单绑定数据
+    const ruleForm =reactive({
+      username: '',
+      password: '',
+      passwords: '',
+      mobCode: ''
+    })
+    // 表单的验证
+    const rules = reactive({
+      username: [
+        { validator: validateUserName, trigger: 'blur' }
+      ],
+      password: [
+        { validator: validatePassword, trigger: 'blur' }
+      ],
+      passwords: [
+        { validator: validatePasswords, trigger: 'blur' }
+      ],
+      mobCode: [
+        { validator: validateMobCode, trigger: 'blur' }
+      ]
+    })
+
+    /**
+     * 声明函数
+     */
+    // 切换登录、注册
+    const toggleMneu = (data => {
+      menuTab.forEach((elem, index) => {
+        elem.current = false
+      });
+      // 显示高光
+      data.current = true;
+    })
+    // 表单方法
+    const submitForm = (formName => {
+      context.refs[formName].validate((valid) => {
+        if (valid) {
+          alert('submit!');
+        } else {
+          console.log('error submit!!');
+          return false;
+        }
+      });
+    })
+
     // 邮箱验证
-    var validateUserName = (rule, value, callback) => { 
+    let validateUserName = (rule, value, callback) => { 
       if (value === '') {
         callback(new Error('请输入用户邮箱'));
       }else if(validateEmail(value)) {
@@ -59,10 +114,10 @@ export default {
     };
 
     // 密码验证
-    var validatePassword = (rule, value, callback) => {
+    let validatePassword = (rule, value, callback) => {
       // 过滤后的数据
-      this.ruleForm.password = stripscript(value)
-      value = this.ruleForm.password
+      ruleForm.password = stripscript(value)
+      value = ruleForm.password
       
       if (value === '') {
         callback(new Error('请输入密码'));
@@ -74,14 +129,14 @@ export default {
     };
 
     // 重复密码验证
-    var validatePasswords = (rule, value, callback) => {
+    let validatePasswords = (rule, value, callback) => {
       // 过滤后的数据
-      this.ruleForm.passwords = stripscript(value)
-      value = this.ruleForm.passwords
+      ruleForm.passwords = stripscript(value)
+      value = ruleForm.passwords
       
       if (value === '') {
         callback(new Error('请再次输入密码'));
-      } else if (value !== this.ruleForm.password) {
+      } else if (value !== ruleForm.password) {
         callback(new Error('两次密码输入不一样!'));
       } else {
         callback();
@@ -89,10 +144,10 @@ export default {
     };
 
     // 验证验证码
-    var validateMobCode = (rule, value, callback) => {
+    let validateMobCode = (rule, value, callback) => {
       // 过滤后的数据
-      this.ruleForm.mobCode = stripscript(value)
-      value = this.ruleForm.mobCode
+      ruleForm.mobCode = stripscript(value)
+      value = ruleForm.mobCode
 
       if (value === '') {
         return callback(new Error('验证码不能为空!'));
@@ -101,54 +156,16 @@ export default {
       }else {
         callback()
       } 
-    };
+    }
+
     return {
-      menuTab: [
-        { txt: '登录', current: true },
-        { txt: '注册', current: false }
-      ],
-      ruleForm: {
-        username: '',
-        password: '',
-        passwords: '',
-        mobCode: ''
-      },
-      rules: {
-        username: [
-          { validator: validateUserName, trigger: 'blur' }
-        ],
-        password: [
-          { validator: validatePassword, trigger: 'blur' }
-        ],
-        passwords: [
-          { validator: validatePasswords, trigger: 'blur' }
-        ],
-        mobCode: [
-          { validator: validateMobCode, trigger: 'blur' }
-        ]
-      }
-    };
-  },
-  // 方法
-  methods: {
-    toggleMneu(data) {
-      this.menuTab.forEach((elem, index) => {
-        elem.current = false
-      });
-      // 显示高光
-      data.current = true;
-    },
-    // 表单方法
-    submitForm(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          alert('submit!');
-        } else {
-          console.log('error submit!!');
-          return false;
-        }
-      });
-    },
+      menuTab,
+      ruleForm,
+      rules,
+
+      toggleMneu,
+      submitForm
+    }
   }
 }
 </script>

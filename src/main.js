@@ -1,5 +1,6 @@
 import Vue from "vue";
 import App from "./App.vue";
+import VueCompositionApi from '@vue/composition-api';
 // 引入ElementUI组件
 import ElementUI from 'element-ui';
 import 'element-ui/packages/theme-chalk/lib/index.css';
@@ -11,6 +12,7 @@ import store from "./store";
 // import "amfe-flexible";
 // 注入
 Vue.use(ElementUI);
+Vue.use(VueCompositionApi);
 Vue.config.productionTip = false;
 
 new Vue({
